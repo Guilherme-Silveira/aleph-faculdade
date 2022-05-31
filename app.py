@@ -47,8 +47,9 @@ def get_ubs_by_name():
 
 @app.route('/get_ubs_by_id', methods=['GET'])
 def get_ubs_by_id():
+  cep = request.args.get('cep')
   id = request.args.get('id')
-  response = get_ubs_by_id_db(id)
+  response = get_ubs_by_id_db(cep, id)
   return response
 
 @app.route('/get_ubs_by_cep')
@@ -56,6 +57,14 @@ def get_ubs_by_cep():
   cep = request.args.get('cep')
   response = get_ubs_by_cep_db(cep)
   return response
+
+@app.route('/get_ubs_by_review')
+def get_ubs_by_review():
+  cep = request.args.get('cep')
+  deficiencia = request.args.get('deficiencia')
+  uf = request.args.get('uf')
+  result = get_ubs_by_review_db(cep, deficiencia, uf)
+  return result
 
 app.run(host='0.0.0.0', port=5001)
 

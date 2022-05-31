@@ -60,14 +60,21 @@ def get_ubs_by_name_db(cep, nome):
       }
     }
   ], size=20)['hits']['hits']
+  for i in result:
+    km = calc_km((geocode_result['lat'], geocode_result['lng']), (float(i['_source']['LOCALIZACAO']['lat']), float(i['_source']['LOCALIZACAO']['lon'])))
+    i['_source']['km'] = km
   return jsonify(result)
 
-def get_ubs_by_id_db(id):
+def get_ubs_by_id_db(cep, id):
+  gmaps = googlemaps.Client(key='AIzaSyAoffgA6HLynJ83waSAhh3leCzxmEYiPl8')
+  geocode_result = gmaps.geocode(cep)[0]['geometry']['location']
   result = es_connection.search(index='ubs', query={
     "match": {
       "CNES": id
     }
   })['hits']['hits'][0]['_source']
+  km = calc_km((geocode_result['lat'], geocode_result['lng']), (float(result['LOCALIZACAO']['lat']), float(result['LOCALIZACAO']['lon'])))
+  result['km'] = km
   return result
 
 def get_ubs_by_cep_db(cep):
@@ -96,21 +103,45 @@ def get_ubs_by_cep_db(cep):
         "ignore_unmapped": "true"
       }
     }
-  ], size=20)
-  return jsonify(dict(result)['hits']['hits'])
+  ], size=20)['hits']['hits']
+  for i in result:
+    km = calc_km((geocode_result['lat'], geocode_result['lng']), (float(i['_source']['LOCALIZACAO']['lat']), float(i['_source']['LOCALIZACAO']['lon'])))
+    i['_source']['km'] = km
+  return jsonify(result)
 
-def get_ubs_by_review_db(deficiencia, uf):
-  sql = """
+def get_ubs_by_review_db(cep, deficiencia, uf):
+  gmaps = googlemaps.Client(key='AIzaSyAoffgA6HLynJ83waSAhh3leCzxmEYiPl8')
+  geocode_result = gmaps.geocode(cep)[0]['geometry']['location']
+
+  sql = f"""
   SELECT 
-    u.nome, 
+    u.cnes,
+    u.nome,
+    u.longitude,
+    u.latitude,
     AVG(a.acessibilidade) as media 
-  FROM avaliacao as a 
-  INNER JOIN ubs as u 
+  FROM projeto.avaliacao as a 
+  INNER JOIN projeto.ubs as u 
   ON a.id_ubs = u.cnes 
   WHERE 
-    u.uf = 35 
+    u.uf = {uf} 
     AND 
-    a.deficiencia = 'fala' 
-  GROUP BY nome 
+    a.deficiencia = '{deficiencia}' 
+  GROUP BY u.nome, u.cnes, u.longitude, u.latitude
   ORDER BY media DESC
   """
+  cursor.execute(sql)
+  result = cursor.fetchall()
+  response = []
+  for i in result:
+    km = calc_km((geocode_result['lat'], geocode_result['lng']), (float(i[3].replace(',', '.')), float(i[2].replace(',', '.'))))
+    response.append({
+      'cnes': i[0],
+      'nome': i[1],
+      'km': km,
+      'media': float(i[4])
+    })  
+  return jsonify(response)
+
+def calc_km(source, dest):
+  return "{:.3f}".format(haversine((source[0], source[1]), (dest[0], dest[1])))
