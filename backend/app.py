@@ -1,9 +1,11 @@
 from flask import Flask, request
+from flask_cors import CORS
 from middleware import *
 from model.Usuario import Usuario
 from model.Avaliacao import Avaliacao
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/create_user', methods=['POST'])
 def create_user():
@@ -47,9 +49,8 @@ def get_ubs_by_name():
 
 @app.route('/get_ubs_by_id', methods=['GET'])
 def get_ubs_by_id():
-  cep = request.args.get('cep')
   id = request.args.get('id')
-  response = get_ubs_by_id_db(cep, id)
+  response = get_ubs_by_id_db(id)
   return response
 
 @app.route('/get_ubs_by_cep')

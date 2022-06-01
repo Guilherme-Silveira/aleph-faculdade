@@ -65,17 +65,28 @@ def get_ubs_by_name_db(cep, nome):
     i['_source']['km'] = km
   return jsonify(result)
 
-def get_ubs_by_id_db(cep, id):
-  gmaps = googlemaps.Client(key='AIzaSyAoffgA6HLynJ83waSAhh3leCzxmEYiPl8')
-  geocode_result = gmaps.geocode(cep)[0]['geometry']['location']
-  result = es_connection.search(index='ubs', query={
-    "match": {
-      "CNES": id
-    }
-  })['hits']['hits'][0]['_source']
-  km = calc_km((geocode_result['lat'], geocode_result['lng']), (float(result['LOCALIZACAO']['lat']), float(result['LOCALIZACAO']['lon'])))
-  result['km'] = km
-  return result
+def get_ubs_by_id_db(id):
+  sql = f"""
+    SELECT a.deficiencia, a.estrutura, a.acessibilidade, a.comentario, a.id_ubs, u.usuario, a.id_avaliacao
+    FROM projeto.avaliacao as a
+    INNER JOIN projeto.usuario as u
+    ON u.id = a.id_usuario
+    WHERE a.id_ubs = '{id}'
+  """
+  cursor.execute(sql)
+  response = cursor.fetchall()
+  result = []
+  for i in response:
+    result.append({
+      'deficiencia': i[0],
+      'estrutura': i[1],
+      'acessibilidade': i[2],
+      'comentario': i[3],
+      'id_ubs': i[4],
+      'usuario': i[5],
+      'id_avaliacao': i[6]
+    })
+  return jsonify(result)
 
 def get_ubs_by_cep_db(cep):
   gmaps = googlemaps.Client(key='AIzaSyAoffgA6HLynJ83waSAhh3leCzxmEYiPl8')
