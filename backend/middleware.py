@@ -39,7 +39,7 @@ def create_review_db(avaliacao):
   })
 
 def get_ubs_by_name_db(cep, nome):
-  gmaps = googlemaps.Client(key='AIzaSyAoffgA6HLynJ83waSAhh3leCzxmEYiPl8')
+  gmaps = googlemaps.Client(key='123456789')
   geocode_result = gmaps.geocode(cep)[0]['geometry']['location']
   result = es_connection.search(index='ubs', query={
     "match": {
@@ -89,7 +89,7 @@ def get_ubs_by_id_db(id):
   return jsonify(result)
 
 def get_ubs_by_cep_db(cep):
-  gmaps = googlemaps.Client(key='AIzaSyAoffgA6HLynJ83waSAhh3leCzxmEYiPl8')
+  gmaps = googlemaps.Client(key='123456789')
   geocode_result = gmaps.geocode(cep)[0]['geometry']['location']
   result = es_connection.search(index='ubs', query={
     "bool": {
@@ -121,7 +121,7 @@ def get_ubs_by_cep_db(cep):
   return jsonify(result)
 
 def get_ubs_by_review_db(cep, deficiencia, uf):
-  gmaps = googlemaps.Client(key='AIzaSyAoffgA6HLynJ83waSAhh3leCzxmEYiPl8')
+  gmaps = googlemaps.Client(key='123456789')
   geocode_result = gmaps.geocode(cep)[0]['geometry']['location']
 
   sql = f"""
