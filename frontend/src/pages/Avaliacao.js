@@ -4,7 +4,7 @@ import Stack from '@mui/material/Stack';
 import { Select } from '@mui/material';
 import { ListItem, MenuItem, InputLabel, FormControl } from '@mui/material';
 import Button from '@mui/material/Button';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import instance from '../axios'
 
 async function create_review(navigate, deficiencia, estrutura, acessibilidade, comentario, id_usuario, id_ubs, nome, distancia) {
@@ -29,6 +29,16 @@ async function create_review(navigate, deficiencia, estrutura, acessibilidade, c
   } else {
     alert("Erro ao inserir avaliação")
   }
+}
+
+function back_ubs(navigate, id, nome, distancia) {
+  navigate('/ubs', {
+    state: {
+      id,
+      nome,
+      distancia
+    }
+  })
 }
 
 const Avaliacao = () => {
@@ -123,7 +133,7 @@ const Avaliacao = () => {
           />
         </ListItem>
         <Stack direction="row" spacing={2}>
-          <ListItem><Link to={{pathname: '/ubs', state: {id, nome, distancia}}}><Button variant="outlined">Voltar</Button></Link></ListItem>
+          <ListItem><Button variant="outlined" onClick={() => back_ubs(navigate, id, nome, distancia)}>Voltar</Button></ListItem>
           <ListItem><Button variant="contained" onClick={() => {
             create_review(navigate, deficiencia, estrutura, acessibilidade, comentario, id_usuario, id, nome, distancia)
           }
